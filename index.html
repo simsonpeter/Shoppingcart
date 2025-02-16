@@ -43,9 +43,10 @@
         .input-section {
             display: flex;
             gap: 10px;
-            padding: 20px;
+            padding: 15px;
             background: #f8f8f8;
             border-bottom: 1px solid #ddd;
+            flex-wrap: wrap; /* Allow wrapping on small screens */
         }
 
         input[type="text"],
@@ -57,6 +58,7 @@
             font-size: 16px;
             outline: none;
             transition: border-color 0.3s ease;
+            min-width: 150px; /* Ensure inputs don't shrink too much */
         }
 
         input[type="text"]:focus,
@@ -74,6 +76,7 @@
             font-size: 16px;
             font-weight: 500;
             transition: background-color 0.3s ease;
+            flex-shrink: 0; /* Prevent button from shrinking */
         }
 
         button:hover {
@@ -82,7 +85,7 @@
 
         .clear-btn {
             background-color: #f44336;
-            margin: 20px;
+            margin: 10px;
         }
 
         .clear-btn:hover {
@@ -102,7 +105,7 @@
             display: flex;
             align-items: center;
             padding: 12px;
-            margin: 8px 20px;
+            margin: 8px 15px;
             background-color: #f8f8f8;
             border-radius: 8px;
             transition: all 0.3s ease;
@@ -159,15 +162,16 @@
 
             .input-section {
                 flex-direction: column;
-                padding: 15px;
-            }
-
-            button {
-                width: 100%;
+                padding: 10px;
             }
 
             input[type="text"],
             input[type="number"] {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            button {
                 width: 100%;
             }
 
@@ -201,7 +205,7 @@
 
         <ul id="shoppingList"></ul>
 
-        <div style="display: flex; gap: 10px; padding: 20px; background: #f8f8f8;">
+        <div style="display: flex; gap: 10px; padding: 10px; background: #f8f8f8;">
             <button class="clear-btn" onclick="clearAll()">Clear All</button>
             <button class="clear-btn" onclick="sortItems()">Sort Items</button>
         </div>
