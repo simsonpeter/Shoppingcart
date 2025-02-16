@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping List App</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .clear-btn {
+            background-color: #f44336;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .clear-btn:hover {
+            background-color: #da190b;
+        }
+
+        ul {
+            list-style-type: none;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #f8f8f8;
+            border-radius: 4px;
+        }
+
+        .list-item.completed {
+            background-color: #e0e0e0;
+            opacity: 0.7;
+        }
+
+        .list-item.completed .item-name {
+            text-decoration: line-through;
+        }
+
+        .item-name {
+            flex: 1;
+            margin: 0 10px;
+        }
+
+        .quantity {
+            width: 60px;
+            text-align: center;
+        }
+
+        .delete-btn {
+            background-color: #ff4444;
+            padding: 5px 10px;
+            margin-left: 10px;
+        }
+
+        .delete-btn:hover {
+            background-color: #cc0000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Shopping List</h1>
+        
+        <div class="input-section">
+            <input type="text" id="itemInput" placeholder="Enter item...">
+            <input type="number" id="quantityInput" placeholder="Qty" min="1" value="1">
+            <button onclick="addItem()">Add Item</button>
+        </div>
+
+        <ul id="shoppingList"></ul>
+
+        <button class="clear-btn" onclick="clearAll()">Clear All Items</button>
+        <button class="clear-btn" onclick="sortItems()">Sort Items</button>
+    </div>
+
+    <script>
+        let items = JSON.parse(localStorage.getItem('shoppingList')) || [];
+
+        function saveToLocalStorage() {
+            localStorage.setItem('shoppingList', JSON.stringify(items));
+        }
+
+        function addItem() {
+            const itemInput = document.getElementById('itemInput');
+            const quantityInput = document.getElementById('quantityInput');
+            
+            const itemName = itemInput.value.trim();
+            const quantity = parseInt(quantityInput.value) || 1;
+
+            if (itemName) {
+                const newItem = {
+                    id: Date.now(),
+                    name: itemName,
+                    quantity: quantity,
+                    completed: false
+                };
+
+                items.push(newItem);
+                renderList();
+                saveToLocalStorage();
+
+                itemInput.value = '';
+                quantityInput.value = 1;
+                itemInput.focus();
+            }
+        }
+
+        function toggleCompleted(id) {
+            items = items.map(item => {
+                if (item.id === id) {
+                    return {...item, completed: !item.completed};
+                }
+                return item;
+            });
+            renderList();
+            saveToLocalStorage();
+        }
+
+        function deleteItem(id) {
+            items = items.filter(item => item.id !== id);
+            renderList();
+            saveToLocalStorage();
+        }
+
+        function clearAll() {
+            if (confirm('Are you sure you want to clear all items?')) {
+                items = [];
+                renderList();
+                saveToLocalStorage();
+            }
+        }
+
+        function sortItems() {
+            items.sort((a, b) => a.completed - b.completed);
+            renderList();
+        }
+
+        function renderList() {
+            const list = document.getElementById('shoppingList');
+            list.innerHTML = '';
+
+            items.forEach(item => {
+                const li = document.createElement('li');
+                li.className = `list-item ${item.completed ? 'completed' : ''}`;
+                
+                li.innerHTML = `
+                    <input type="checkbox" 
+                           ${item.completed ? 'checked' : ''} 
+                           onchange="toggleCompleted(${item.id})">
+                    <span class="item-name">${item.name}</span>
+                    <span class="quantity">${item.quantity}x</span>
+                    <button class="delete-btn" onclick="deleteItem(${item.id})">Delete</button>
+                `;
+
+                list.appendChild(li);
+            });
+        }
+
+        // Initial render
+        renderList();
+
+        // Add item when Enter is pressed in input field
+        document.getElementById('itemInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addItem();
+            }
+        });
+    </script>
+</body>
+</html>
