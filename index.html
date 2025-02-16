@@ -40,17 +40,28 @@
             margin: 0;
         }
 
-        .input-section {
-            display: flex;
-            gap: 10px;
+        .auth-section {
             padding: 15px;
             background: #f8f8f8;
             border-bottom: 1px solid #ddd;
-            flex-wrap: wrap; /* Allow wrapping on small screens */
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .input-section {
+            padding: 15px;
+            background: #f8f8f8;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         input[type="text"],
-        input[type="number"] {
+        input[type="number"],
+        input[type="email"],
+        input[type="password"] {
             flex: 1;
             padding: 12px;
             border: 1px solid #ddd;
@@ -58,11 +69,10 @@
             font-size: 16px;
             outline: none;
             transition: border-color 0.3s ease;
-            min-width: 150px; /* Ensure inputs don't shrink too much */
+            min-width: 150px;
         }
 
-        input[type="text"]:focus,
-        input[type="number"]:focus {
+        input:focus {
             border-color: #4CAF50;
         }
 
@@ -76,7 +86,7 @@
             font-size: 16px;
             font-weight: 500;
             transition: background-color 0.3s ease;
-            flex-shrink: 0; /* Prevent button from shrinking */
+            flex-shrink: 0;
         }
 
         button:hover {
@@ -160,13 +170,13 @@
                 padding: 15px;
             }
 
+            .auth-section,
             .input-section {
                 flex-direction: column;
                 padding: 10px;
             }
 
-            input[type="text"],
-            input[type="number"] {
+            input {
                 width: 100%;
                 margin-bottom: 10px;
             }
@@ -197,28 +207,92 @@
     <div class="container">
         <h1>Shopping List</h1>
         
+        <!-- Auth Section -->
+        <div class="auth-section">
+            <input type="email" id="emailInput" placeholder="Email">
+            <input type="password" id="passwordInput" placeholder="Password">
+            <button onclick="signUp()">Sign Up</button>
+            <button onclick="signIn()">Sign In</button>
+            <button onclick="signOut()" style="background: #f44336;">Sign Out</button>
+        </div>
+
+        <!-- Input Section -->
         <div class="input-section">
             <input type="text" id="itemInput" placeholder="Enter item...">
             <input type="number" id="quantityInput" placeholder="Qty" min="1" value="1">
             <button onclick="addItem()">Add Item</button>
         </div>
 
+        <!-- Shopping List -->
         <ul id="shoppingList"></ul>
 
+        <!-- Action Buttons -->
         <div style="display: flex; gap: 10px; padding: 10px; background: #f8f8f8;">
             <button class="clear-btn" onclick="clearAll()">Clear All</button>
             <button class="clear-btn" onclick="sortItems()">Sort Items</button>
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
     <script>
-        let items = JSON.parse(localStorage.getItem('shoppingList')) || [];
+        // Firebase Configuration (Replace with your Firebase config)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
 
-        function saveToLocalStorage() {
-            localStorage.setItem('shoppingList', JSON.stringify(items));
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let currentUser = null;
+
+        // Auth Functions
+        function signUp() {
+            const email = document.getElementById('emailInput').value;
+            const password = document.getElementById('passwordInput').value;
+            auth.createUserWithEmailAndPassword(email, password)
+                .then(() => alert('Signed up successfully!'))
+                .catch((error) => alert(error.message));
         }
 
-        function addItem() {
+        function signIn() {
+            const email = document.getElementById('emailInput').value;
+            const password = document.getElementById('passwordInput').value;
+            auth.signInWithEmailAndPassword(email, password)
+                .then(() => alert('Signed in successfully!'))
+                .catch((error) => alert(error.message));
+        }
+
+        function signOut() {
+            auth.signOut()
+                .then(() => alert('Signed out successfully!'))
+                .catch((error) => alert(error.message));
+        }
+
+        // Listen for Auth State Changes
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                loadItems();
+            } else {
+                currentUser = null;
+                alert('Please sign in.');
+            }
+        });
+
+        // Firestore Functions
+        async function addItem() {
+            if (!currentUser) return alert('Please sign in.');
+
             const itemInput = document.getElementById('itemInput');
             const quantityInput = document.getElementById('quantityInput');
             
@@ -226,83 +300,67 @@
             const quantity = parseInt(quantityInput.value) || 1;
 
             if (itemName) {
-                const newItem = {
-                    id: Date.now(),
+                await db.collection('shoppingLists').doc(currentUser.uid).collection('items').add({
                     name: itemName,
                     quantity: quantity,
-                    completed: false
-                };
-
-                items.push(newItem);
-                renderList();
-                saveToLocalStorage();
+                    completed: false,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
 
                 itemInput.value = '';
                 quantityInput.value = 1;
                 itemInput.focus();
+                loadItems();
             }
         }
 
-        function toggleCompleted(id) {
-            items = items.map(item => {
-                if (item.id === id) {
-                    return {...item, completed: !item.completed};
-                }
-                return item;
-            });
-            renderList();
-            saveToLocalStorage();
-        }
+        async function loadItems() {
+            if (!currentUser) return;
 
-        function deleteItem(id) {
-            items = items.filter(item => item.id !== id);
-            renderList();
-            saveToLocalStorage();
-        }
-
-        function clearAll() {
-            if (confirm('Are you sure you want to clear all items?')) {
-                items = [];
-                renderList();
-                saveToLocalStorage();
-            }
-        }
-
-        function sortItems() {
-            items.sort((a, b) => a.completed - b.completed);
-            renderList();
-        }
-
-        function renderList() {
             const list = document.getElementById('shoppingList');
             list.innerHTML = '';
 
-            items.forEach(item => {
+            const snapshot = await db.collection('shoppingLists').doc(currentUser.uid).collection('items').orderBy('timestamp').get();
+            snapshot.forEach((doc) => {
+                const item = doc.data();
                 const li = document.createElement('li');
                 li.className = `list-item ${item.completed ? 'completed' : ''}`;
-                
                 li.innerHTML = `
                     <input type="checkbox" class="checkbox" 
                            ${item.completed ? 'checked' : ''} 
-                           onchange="toggleCompleted(${item.id})">
+                           onchange="toggleCompleted('${doc.id}')">
                     <span class="item-name">${item.name}</span>
                     <span class="quantity">${item.quantity}x</span>
-                    <button class="delete-btn" onclick="deleteItem(${item.id})">Delete</button>
+                    <button class="delete-btn" onclick="deleteItem('${doc.id}')">Delete</button>
                 `;
-
                 list.appendChild(li);
             });
         }
 
-        // Initial render
-        renderList();
+        async function toggleCompleted(id) {
+            const itemRef = db.collection('shoppingLists').doc(currentUser.uid).collection('items').doc(id);
+            const item = (await itemRef.get()).data();
+            await itemRef.update({ completed: !item.completed });
+            loadItems();
+        }
 
-        // Add item when Enter is pressed in input field
-        document.getElementById('itemInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                addItem();
+        async function deleteItem(id) {
+            await db.collection('shoppingLists').doc(currentUser.uid).collection('items').doc(id).delete();
+            loadItems();
+        }
+
+        async function clearAll() {
+            if (confirm('Are you sure you want to clear all items?')) {
+                const snapshot = await db.collection('shoppingLists').doc(currentUser.uid).collection('items').get();
+                snapshot.forEach((doc) => doc.ref.delete());
+                loadItems();
             }
-        });
+        }
+
+        function sortItems() {
+            // Sorting is handled by Firestore's timestamp
+            loadItems();
+        }
     </script>
 </body>
 </html>
