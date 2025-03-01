@@ -75,16 +75,11 @@
       margin: 0 10px;
       font-weight: bold;
     }
-    #google-signin {
-      text-align: center;
-      margin-bottom: 20px;
-    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Grocery List App</h1>
-    <div id="google-signin"></div>
 
     <!-- Input for adding grocery items -->
     <div class="input-group">
@@ -98,50 +93,30 @@
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
   <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyAD4H5RyMTTv7KHRp7ax6pTtOaRepzV6vc",
-      authDomain: "shopping-453dd.firebaseapp.com",
-      projectId: "shopping-453dd",
-      storageBucket: "shopping-453dd.firebasestorage.app",
-      messagingSenderId: "300908371402",
-      appId: "1:300908371402:web:d24b6fdf8baa9082670333",
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID",
     };
 
     // Initialize Firebase
     const app = firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
     const db = firebase.firestore();
-
-    let userEmail = null;
-
-    // Google Sign-In
-    const googleSignIn = document.getElementById('google-signin');
-    googleSignIn.innerHTML = `
-      <button id="sign-in-button">Sign in with Google</button>
-    `;
-
-    document.getElementById('sign-in-button').addEventListener('click', () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider).then((result) => {
-        userEmail = result.user.email;
-        googleSignIn.innerHTML = `Welcome, ${result.user.displayName}!`;
-        renderGroceryList();
-      });
-    });
 
     // Add Item Function
     document.getElementById('add-item').addEventListener('click', async () => {
       const itemName = document.getElementById('grocery-input').value.trim();
       const quantity = parseInt(document.getElementById('quantity-input').value);
-      if (itemName && quantity > 0 && userEmail) {
+      if (itemName && quantity > 0) {
         await db.collection('groceryItems').add({
           name: itemName,
           quantity,
           completed: false,
-          userEmail,
         });
         document.getElementById('grocery-input').value = '';
         document.getElementById('quantity-input').value = 1;
@@ -150,28 +125,26 @@
 
     // Render Grocery List
     function renderGroceryList() {
-      db.collection('groceryItems')
-        .where('userEmail', '==', userEmail)
-        .onSnapshot((snapshot) => {
-          const groceryListElement = document.getElementById('grocery-list');
-          groceryListElement.innerHTML = '';
-          snapshot.forEach((doc) => {
-            const item = doc.data();
-            const listItem = document.createElement('li');
-            if (item.completed) {
-              listItem.classList.add('completed');
-            }
-            listItem.innerHTML = `
-              <span>${item.name}</span>
-              <span class="quantity">x${item.quantity}</span>
-              <div>
-                <button onclick="toggleCompleted('${doc.id}')">${item.completed ? 'Undo' : 'Done'}</button>
-                <button onclick="removeItem('${doc.id}')">Remove</button>
-              </div>
-            `;
-            groceryListElement.appendChild(listItem);
-          });
+      db.collection('groceryItems').onSnapshot((snapshot) => {
+        const groceryListElement = document.getElementById('grocery-list');
+        groceryListElement.innerHTML = '';
+        snapshot.forEach((doc) => {
+          const item = doc.data();
+          const listItem = document.createElement('li');
+          if (item.completed) {
+            listItem.classList.add('completed');
+          }
+          listItem.innerHTML = `
+            <span>${item.name}</span>
+            <span class="quantity">x${item.quantity}</span>
+            <div>
+              <button onclick="toggleCompleted('${doc.id}')">${item.completed ? 'Undo' : 'Done'}</button>
+              <button onclick="removeItem('${doc.id}')">Remove</button>
+            </div>
+          `;
+          groceryListElement.appendChild(listItem);
         });
+      });
     }
 
     // Toggle Completed Status
@@ -190,6 +163,9 @@
     function removeItem(id) {
       db.collection('groceryItems').doc(id).delete();
     }
+
+    // Initial Render
+    renderGroceryList();
   </script>
 </body>
 </html>
