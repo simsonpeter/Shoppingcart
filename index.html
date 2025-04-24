@@ -1,171 +1,462 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Grocery List App</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 600px;
-      margin: 50px auto;
-      padding: 20px;
-      background: #fff;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
-    }
-    h1 {
-      text-align: center;
-      color: #333;
-    }
-    .input-group {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .input-group input {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-    .input-group input[type="number"] {
-      width: 80px;
-    }
-    .input-group button {
-      padding: 10px 20px;
-      background: #28a745;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .grocery-list {
-      list-style: none;
-      padding: 0;
-    }
-    .grocery-list li {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
-    }
-    .grocery-list li:last-child {
-      border-bottom: none;
-    }
-    .grocery-list li.completed span {
-      text-decoration: line-through;
-      color: #888;
-    }
-    .grocery-list li button {
-      background: #dc3545;
-      color: #fff;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .quantity {
-      margin: 0 10px;
-      font-weight: bold;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping List - Synced</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .app-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .auth-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .auth-btn {
+            padding: 8px 16px;
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .user-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        #item-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        #add-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        #add-button:hover {
+            background-color: #45a049;
+        }
+        
+        .shopping-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .shopping-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        
+        .shopping-list li:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .shopping-list li.completed {
+            text-decoration: line-through;
+            color: #888;
+            background-color: #e8f5e9;
+        }
+        
+        .item-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .complete-btn, .delete-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .complete-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .complete-btn:hover {
+            background-color: #0b7dda;
+        }
+        
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background-color: #da190b;
+        }
+        
+        .stats {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-btn {
+            padding: 8px 15px;
+            background-color: #e0e0e0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .filter-btn.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .sync-status {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h1>Grocery List App</h1>
-
-    <!-- Input for adding grocery items -->
-    <div class="input-group">
-      <input type="text" id="grocery-input" placeholder="Add a grocery item...">
-      <input type="number" id="quantity-input" placeholder="Qty" min="1" value="1">
-      <button id="add-item">Add</button>
+    <div class="app-container">
+        <h1>Shopping List - Synced</h1>
+        
+        <div class="auth-container" id="auth-container">
+            <button class="auth-btn" id="signin-button">Sign in with Google</button>
+        </div>
+        
+        <div class="user-info" id="user-info" style="display: none;">
+            <img class="user-avatar" id="user-avatar" src="" alt="User">
+            <span id="user-name"></span>
+            <button class="auth-btn" id="signout-button" style="background-color: #f44336;">Sign out</button>
+        </div>
+        
+        <div id="app-content" style="display: none;">
+            <div class="input-container">
+                <input type="text" id="item-input" placeholder="Add an item...">
+                <button id="add-button">Add</button>
+            </div>
+            
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="active">Active</button>
+                <button class="filter-btn" data-filter="completed">Completed</button>
+            </div>
+            
+            <ul class="shopping-list" id="shopping-list">
+                <!-- Items will be added here -->
+            </ul>
+            
+            <div class="stats">
+                <span id="item-count">0</span> items total | 
+                <span id="completed-count">0</span> completed
+            </div>
+            
+            <div class="sync-status" id="sync-status">
+                Syncing...
+            </div>
+        </div>
     </div>
 
-    <!-- Grocery List -->
-    <ul class="grocery-list" id="grocery-list"></ul>
-  </div>
-
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID",
-    };
-
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    // Add Item Function
-    document.getElementById('add-item').addEventListener('click', async () => {
-      const itemName = document.getElementById('grocery-input').value.trim();
-      const quantity = parseInt(document.getElementById('quantity-input').value);
-      if (itemName && quantity > 0) {
-        await db.collection('groceryItems').add({
-          name: itemName,
-          quantity,
-          completed: false,
-        });
-        document.getElementById('grocery-input').value = '';
-        document.getElementById('quantity-input').value = 1;
-      }
-    });
-
-    // Render Grocery List
-    function renderGroceryList() {
-      db.collection('groceryItems').onSnapshot((snapshot) => {
-        const groceryListElement = document.getElementById('grocery-list');
-        groceryListElement.innerHTML = '';
-        snapshot.forEach((doc) => {
-          const item = doc.data();
-          const listItem = document.createElement('li');
-          if (item.completed) {
-            listItem.classList.add('completed');
-          }
-          listItem.innerHTML = `
-            <span>${item.name}</span>
-            <span class="quantity">x${item.quantity}</span>
-            <div>
-              <button onclick="toggleCompleted('${doc.id}')">${item.completed ? 'Undo' : 'Done'}</button>
-              <button onclick="removeItem('${doc.id}')">Remove</button>
-            </div>
-          `;
-          groceryListElement.appendChild(listItem);
-        });
-      });
-    }
-
-    // Toggle Completed Status
-    function toggleCompleted(id) {
-      db.collection('groceryItems')
-        .doc(id)
-        .get()
-        .then((doc) => {
-          db.collection('groceryItems')
-            .doc(id)
-            .update({ completed: !doc.data().completed });
-        });
-    }
-
-    // Remove Item
-    function removeItem(id) {
-      db.collection('groceryItems').doc(id).delete();
-    }
-
-    // Initial Render
-    renderGroceryList();
-  </script>
+    <script>
+       // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDw25tope_JyrOw8FXQGP0PuyXaSaTqjKU",
+  authDomain: "shopping-9d59f.firebaseapp.com",
+  databaseURL: "https://shopping-9d59f-default-rtdb.firebaseio.com",
+  projectId: "shopping-9d59f",
+  storageBucket: "shopping-9d59f.firebasestorage.app",
+  messagingSenderId: "1001413581669",
+  appId: "1:1001413581669:web:36f2e1007d725c5c209f8c",
+  measurementId: "G-7XKMEC8S44"
+};
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        
+        // DOM elements
+        const itemInput = document.getElementById('item-input');
+        const addButton = document.getElementById('add-button');
+        const shoppingList = document.getElementById('shopping-list');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const itemCountSpan = document.getElementById('item-count');
+        const completedCountSpan = document.getElementById('completed-count');
+        const signinButton = document.getElementById('signin-button');
+        const signoutButton = document.getElementById('signout-button');
+        const authContainer = document.getElementById('auth-container');
+        const userInfo = document.getElementById('user-info');
+        const userAvatar = document.getElementById('user-avatar');
+        const userName = document.getElementById('user-name');
+        const appContent = document.getElementById('app-content');
+        const syncStatus = document.getElementById('sync-status');
+        
+        // App state
+        let items = [];
+        let currentFilter = 'all';
+        let userId = null;
+        let dbRef = null;
+        
+        // Initialize the app
+        function init() {
+            setupEventListeners();
+            setupAuthStateListener();
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // Add item
+            addButton.addEventListener('click', addItem);
+            itemInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addItem();
+                }
+            });
+            
+            // Filter buttons
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.filter;
+                    renderItems();
+                });
+            });
+            
+            // Auth buttons
+            signinButton.addEventListener('click', signInWithGoogle);
+            signoutButton.addEventListener('click', signOut);
+        }
+        
+        // Set up Firebase auth state listener
+        function setupAuthStateListener() {
+            firebase.auth().onAuthStateChanged(user => {
+                if (user) {
+                    // User is signed in
+                    userId = user.uid;
+                    userAvatar.src = user.photoURL || 'https://via.placeholder.com/30';
+                    userName.textContent = user.displayName || 'User';
+                    authContainer.style.display = 'none';
+                    userInfo.style.display = 'flex';
+                    appContent.style.display = 'block';
+                    
+                    // Initialize database reference
+                    dbRef = firebase.database().ref(`users/${userId}/shoppingList`);
+                    setupDatabaseListener();
+                } else {
+                    // User is signed out
+                    userId = null;
+                    dbRef = null;
+                    authContainer.style.display = 'block';
+                    userInfo.style.display = 'none';
+                    appContent.style.display = 'none';
+                    items = [];
+                    renderItems();
+                }
+            });
+        }
+        
+        // Set up Firebase database listener
+        function setupDatabaseListener() {
+            if (!dbRef) return;
+            
+            syncStatus.textContent = 'Syncing...';
+            
+            dbRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                items = data ? Object.values(data) : [];
+                items.forEach((item, index) => {
+                    item.id = Object.keys(snapshot.val())[index];
+                });
+                renderItems();
+                syncStatus.textContent = 'Synced';
+                setTimeout(() => {
+                    syncStatus.textContent = '';
+                }, 2000);
+            }, (error) => {
+                console.error('Database error:', error);
+                syncStatus.textContent = 'Sync error';
+            });
+        }
+        
+        // Sign in with Google
+        function signInWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider)
+                .catch(error => {
+                    console.error('Sign in error:', error);
+                });
+        }
+        
+        // Sign out
+        function signOut() {
+            firebase.auth().signOut();
+        }
+        
+        // Add a new item
+        function addItem() {
+            const text = itemInput.value.trim();
+            if (text && dbRef) {
+                const newItem = {
+                    text,
+                    completed: false,
+                    createdAt: firebase.database.ServerValue.TIMESTAMP
+                };
+                
+                dbRef.push(newItem);
+                itemInput.value = '';
+                itemInput.focus();
+            }
+        }
+        
+        // Toggle item completion
+        function toggleComplete(id) {
+            if (!dbRef) return;
+            
+            const itemRef = firebase.database().ref(`users/${userId}/shoppingList/${id}`);
+            itemRef.once('value', (snapshot) => {
+                const item = snapshot.val();
+                if (item) {
+                    itemRef.update({ completed: !item.completed });
+                }
+            });
+        }
+        
+        // Delete an item
+        function deleteItem(id) {
+            if (!dbRef) return;
+            
+            const itemRef = firebase.database().ref(`users/${userId}/shoppingList/${id}`);
+            itemRef.remove();
+        }
+        
+        // Render items based on current filter
+        function renderItems() {
+            // Filter items
+            let filteredItems = [];
+            if (currentFilter === 'all') {
+                filteredItems = items;
+            } else if (currentFilter === 'active') {
+                filteredItems = items.filter(item => !item.completed);
+            } else if (currentFilter === 'completed') {
+                filteredItems = items.filter(item => item.completed);
+            }
+            
+            // Clear the list
+            shoppingList.innerHTML = '';
+            
+            // Add items to the DOM
+            if (filteredItems.length === 0) {
+                const emptyMessage = document.createElement('li');
+                emptyMessage.textContent = currentFilter === 'all' ? 'Your shopping list is empty' : 
+                                           currentFilter === 'active' ? 'No active items' : 'No completed items';
+                emptyMessage.style.textAlign = 'center';
+                emptyMessage.style.color = '#888';
+                shoppingList.appendChild(emptyMessage);
+            } else {
+                // Sort items by creation time (newest first)
+                filteredItems.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                
+                filteredItems.forEach(item => {
+                    const li = document.createElement('li');
+                    if (item.completed) {
+                        li.classList.add('completed');
+                    }
+                    
+                    li.innerHTML = `
+                        <span>${item.text}</span>
+                        <div class="item-actions">
+                            <button class="complete-btn">${item.completed ? 'Undo' : 'Complete'}</button>
+                            <button class="delete-btn">Delete</button>
+                        </div>
+                    `;
+                    
+                    // Add event listeners to the buttons
+                    li.querySelector('.complete-btn').addEventListener('click', () => toggleComplete(item.id));
+                    li.querySelector('.delete-btn').addEventListener('click', () => deleteItem(item.id));
+                    
+                    shoppingList.appendChild(li);
+                });
+            }
+            
+            // Update stats
+            itemCountSpan.textContent = items.length;
+            completedCountSpan.textContent = items.filter(item => item.completed).length;
+        }
+        
+        // Initialize the app
+        init();
+    </script>
 </body>
 </html>
